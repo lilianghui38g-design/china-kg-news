@@ -4,32 +4,38 @@ from datetime import datetime
 import pandas as pd
 
 st.set_page_config(page_title="中吉中国新闻监控站", page_icon="🇨🇳", layout="wide")
-st.title("🇰🇬 中吉中国新闻实时监控站")
-st.caption("AKIPRESS • 24.kg • Kaktus.media • Sputnik.kg | 仅显示与中国相关的最新新闻")
+st.title("🇰🇬 中吉中国新闻实时监控站 v2.0")
+st.caption("AKIPRESS • 24.kg • Kaktus • Sputnik • KABAR • KLOOP • VESTI • PRESIDENT • GOV | 仅显示与中国相关的最新新闻")
 
-# ================== 配置四个网站的 Google News RSS ==================
+# ================== 全部RSS来源（已新增5个官方/主流媒体） ==================
 rss_sources = {
     "AKIPRESS": "https://news.google.com/rss/search?q=site:akipress.org+(Китай+OR+КНР+OR+China+OR+Кытай)&hl=ru&gl=KG&ceid=KG:ru",
     "24.kg": "https://news.google.com/rss/search?q=site:24.kg+(Китай+OR+КНР+OR+China+OR+Кытай)&hl=ru&gl=KG&ceid=KG:ru",
     "Kaktus.media": "https://news.google.com/rss/search?q=site:kaktus.media+(Китай+OR+КНР+OR+China+OR+Кытай)&hl=ru&gl=KG&ceid=KG:ru",
     "Sputnik.kg": "https://news.google.com/rss/search?q=site:sputnik.kg+(Китай+OR+КНР+OR+China+OR+Кытай)&hl=ru&gl=KG&ceid=KG:ru",
+    
+    # === 新增部分 ===
+    "KABAR": "https://news.google.com/rss/search?q=site:kabar.kg+(Китай+OR+КНР+OR+China+OR+Кытай)&hl=ru&gl=KG&ceid=KG:ru",
+    "KLOOP": "https://news.google.com/rss/search?q=site:kloop.kg+(Китай+OR+КНР+OR+China+OR+Кытай)&hl=ru&gl=KG&ceid=KG:ru",
+    "VESTI": "https://news.google.com/rss/search?q=site:vesti.kg+(Китай+OR+КНР+OR+China+OR+Кытай)&hl=ru&gl=KG&ceid=KG:ru",
+    "PRESIDENT.KG": "https://news.google.com/rss/search?q=site:president.kg+(Китай+OR+КНР+OR+China+OR+Кытай)&hl=ru&gl=KG&ceid=KG:ru",
+    "GOV.KG": "https://news.google.com/rss/search?q=site:gov.kg+(Китай+OR+КНР+OR+China+OR+Кытай)&hl=ru&gl=KG&ceid=KG:ru",
 }
 
-@st.cache_data(ttl=300)  # 每5分钟自动刷新一次
+@st.cache_data(ttl=300)  # 每5分钟自动刷新
 def fetch_news():
     all_news = []
     for source, url in rss_sources.items():
         feed = feedparser.parse(url)
-        for entry in feed.entries[:15]:  # 每个站点最多取15条
+        for entry in feed.entries[:12]:  # 每个站点最多12条（防止过多）
             all_news.append({
                 "来源": source,
                 "标题": entry.title,
-                "摘要": entry.get("summary", "")[:200] + "...",
+                "摘要": entry.get("summary", "")[:180] + "...",
                 "链接": entry.link,
                 "发布时间": entry.get("published", "未知"),
                 "原始时间": entry.get("published_parsed", None)
             })
-    # 排序（最新在前）
     df = pd.DataFrame(all_news)
     if not df.empty and "原始时间" in df.columns:
         df = df.sort_values(by="原始时间", ascending=False)
@@ -48,9 +54,8 @@ with col2:
 df = fetch_news()
 
 if df.empty:
-    st.warning("暂无与中国相关的新闻（可能 Google 还未索引最新内容）")
+    st.warning("暂无与中国相关的新闻")
 else:
-    # 分站点展示（更清晰）
     tabs = st.tabs(list(rss_sources.keys()) + ["全部新闻"])
     
     for i, source in enumerate(rss_sources.keys()):
@@ -60,12 +65,11 @@ else:
                 st.info(f"暂无 {source} 的中国相关新闻")
             else:
                 for _, row in source_df.iterrows():
-                    with st.expander(f"📰 {row['标题'][:80]}...", expanded=False):
+                    with st.expander(f"📰 {row['标题'][:75]}...", expanded=False):
                         st.write(f"**发布时间**：{row['发布时间']}")
                         st.write(row["摘要"])
                         st.markdown(f"[阅读全文 →]({row['链接']})")
     
-    # 全部新闻 Tab（时间线）
     with tabs[-1]:
         st.subheader("全部最新中国新闻（时间倒序）")
         for _, row in df.iterrows():
@@ -77,23 +81,23 @@ else:
             ---
             """)
 
-# 侧边栏说明
-st.sidebar.header("使用说明")
+# ================== 侧边栏（新增社交媒体说明） ==================
+st.sidebar.header("已监控媒体")
+st.sidebar.success("✅ 9大主流新闻网站（含官方）")
 st.sidebar.info("""
-• 程序自动监控 4 个吉尔吉斯主流媒体  
-• 关键词：Китай、КНР、China、Кытай  
-• 每 5 分钟自动刷新（缓存）  
-• 点击“实时刷新”立即更新  
-• 免费部署成永久网站（见下方）
+• 新增：KABAR、KLOOP、VESTI、PRESIDENT.KG、GOV.KG  
+• 每5分钟自动刷新  
+• 点击按钮手动刷新
 """)
-st.sidebar.success("适合外交、商务、研究人员使用")
 
-# 部署提示
-st.sidebar.markdown("---")
-st.sidebar.subheader("如何变成永久专用网站？")
-st.sidebar.markdown("""
-1. 注册 https://streamlit.io/cloud （免费）
-2. 新建 App → 连接 GitHub（把本文件上传）
-3. 部署后得到永久链接（如 https://你的名字-china-kg-news.streamlit.app）
-4. 可分享给团队使用
+st.sidebar.header("社交媒体（X / Facebook / Instagram）")
+st.sidebar.warning("""
+目前暂未纳入（平台限制）。  
+推荐方案：
+1. 打开 https://rss.app 
+2. 输入吉尔吉斯媒体/自媒体账号链接
+3. 生成RSS后复制链接
+4. 发给我，我立刻帮你加进程序（永久有效）
 """)
+st.sidebar.markdown("---")
+st.sidebar.caption("你的专用中吉中国新闻监控站 v2.0")
