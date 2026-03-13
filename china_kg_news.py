@@ -22,8 +22,8 @@ rss_sources = {
 
 # ================== Facebook 前10大账号（请替换RSS） ==================
 facebook_sources = {
-    "FB_Azattyk": https://rss.app/feeds/Iu2VDqDqXUWi8qCC.xml",          # Facebook页面：https://www.facebook.com/azattyk.org/
-    "FB_Kloop": "YOUR_RSS_HERE",            # https://www.facebook.com/kloop.kg/
+    "FB_Azattyk":"https://rss.app/feeds/Iu2VDqDqXUWi8qCC.xml",          # Facebook页面：https://www.facebook.com/azattyk.org/
+    "FB_Kloop": "https://rss.app/feeds/Iu2VDqDqXUWi8qCC.xml",            # https://www.facebook.com/kloop.kg/
     "FB_AKIpress": "YOUR_RSS_HERE",         # https://www.facebook.com/akipress/
     "FB_BBC_Kyrgyz": "YOUR_RSS_HERE",       # https://www.facebook.com/bbcnewskyrgyz/
     "FB_Kaktus": "YOUR_RSS_HERE",           # https://www.facebook.com/kaktus.kyrgyzstan/
